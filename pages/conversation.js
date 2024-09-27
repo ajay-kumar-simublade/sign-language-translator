@@ -7,7 +7,7 @@ import Zoom from "@mui/material/Zoom";
 import Grow from "@mui/material/Grow";
 import { Button } from "@mui/material";
 import { useSnackbar } from "notistack";
-import { useCallObject, useDailyEvent } from "@daily-co/daily-react";
+import { useCallObject } from "@daily-co/daily-react";
 import { useRouter } from "next/router";
 
 let gestureRecognizer;
@@ -99,7 +99,7 @@ const Conversation = () => {
       }
     };
   }, []);
-
+  let debounceTimeout;
   const enableCam = async () => {
     if (!gestureRecognizer) {
       console.log("test", gestureRecognizer);
@@ -242,10 +242,10 @@ const Conversation = () => {
     };
     try {
       const response = await fetch(url, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKey,
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
         },
         body: JSON.stringify(data),
       });

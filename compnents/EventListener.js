@@ -11,7 +11,7 @@ export function CallEvents() {
 
   return (
     <div className="absolute  bg-gray-950 px-4  w-full py-4">
-      <strong>Transcript:</strong>
+      <strong>Transcript: {' '}</strong>
       {meetingState}
     </div>
   );
