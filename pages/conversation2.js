@@ -306,12 +306,12 @@ const Conversation = () => {
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center bg-gray-900 text-white gap-4 flex-row">
+    <div className="min-h-screen flex justify-center items-center bg-gray-900 text-white gap-4">
       {/* Container */}
 
       <div className="flex justify-center w-11/12 gap-12 align-middle">
         {started && (
-          <div className="relative w-4/5 h-80 rounded-md">
+          <div className="w-4/5 h-full rounded-md bg-gray-800">
             <MeadiaStream
               signText={dmessage}
               callObject={callObject}
@@ -323,7 +323,7 @@ const Conversation = () => {
         <div
           className={`${
             started ? "w-2/5" : "w-1/3 min-w-[400px] bg-gray-800 shadow-lg"
-          }  rounded-xl mt-24 ${
+          }  rounded-xl ${
             started
               ? "p-0 flex flex-col align-middle justify-center"
               : "px-8 py-6"

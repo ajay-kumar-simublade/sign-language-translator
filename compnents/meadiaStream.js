@@ -61,10 +61,7 @@ export default ({ signText, session, callObject, loading }) => {
         <h4>Loading....</h4>
       ) : (
         <DailyProvider callObject={callObject} sty>
-          <div
-            ref={callRef}
-            className="relative flex justify-center rounded-md"
-          >
+          <div ref={callRef} className="relative w-full">
             <DailyVideo
               sessionId={session?.id}
               className="w-full h-full rounded-md"
