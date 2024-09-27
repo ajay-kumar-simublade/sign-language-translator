@@ -4,7 +4,6 @@ import Head from "next/head";
 import Webcam from "react-webcam";
 import { GestureRecognizer, FilesetResolver } from "@mediapipe/tasks-vision";
 import { DrawingUtils } from "@mediapipe/tasks-vision";
-import styles from "../styles/Home.module.css";
 import MeadiaStream from "../compnents/meadiaStream";
 
 let gestureRecognizer;
