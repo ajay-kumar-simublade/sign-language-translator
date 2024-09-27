@@ -1,17 +1,16 @@
+import React, { useEffect, useRef, useState } from "react";
+
 import Head from "next/head";
-import { useEffect, useRef, useState } from "react";
 import Webcam from "react-webcam";
 import { GestureRecognizer, FilesetResolver } from "@mediapipe/tasks-vision";
-import { DrawingUtils } from "@mediapipe/tasks-vision"; // Add this import for drawing
-import styles from "../styles/Home.module.css"; // Assuming you have some styles
+import { DrawingUtils } from "@mediapipe/tasks-vision";
 import MeadiaStream from "../compnents/meadiaStream";
-import { SnackbarProvider } from 'notistack';
 
 let gestureRecognizer;
 let runningMode = "VIDEO";
 let webcamRunning = false;
 
-export default function Home() {
+const Conversation = () => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [loading, setLoading] = useState(true);
@@ -55,6 +54,7 @@ export default function Home() {
       alert("Please wait for gestureRecognizer to load");
       return;
     }
+    makeConversation();
 
     webcamRunning = !webcamRunning;
     const constraints = { video: true };
@@ -158,9 +158,9 @@ export default function Home() {
             setMessage(message);
           }
 
-          // console.log(
-          //   `Gesture: ${categoryName}, Confidence: ${categoryScore}%`,
-          // );
+          console.log(
+            `Gesture: ${categoryName}, Confidence: ${categoryScore}%`
+          );
         }
       }
     }
@@ -170,43 +170,105 @@ export default function Home() {
     }
   }
 
+  const makeConversation = async () => {
+    const options = {
+      method: "POST",
+      headers: {
+        "x-api-key": "<api-key>",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        replica_id: "r79e1c033f",
+        persona_id: "p5317866",
+        callback_url: "http://localhost:3002",
+        conversation_name: "A Meeting with Hassaan",
+        conversational_context:
+          "You are about to talk to Hassaan, one of the cofounders of Tavus. He loves to talk about AI, startups, and racing cars.",
+        custom_greeting: "Hey there Hassaan, long time no see!",
+        properties: {
+          max_call_duration: 3600,
+          participant_left_timeout: 60,
+          enable_recording: true,
+          enable_transcription: true,
+          recording_s3_bucket_name: "conversation-recordings",
+          recording_s3_bucket_region: "us-east-1",
+          aws_assume_role_arn: "",
+        },
+      }),
+    };
+    try {
+      const response = await fetch(
+        "https://tavusapi.com/v2/conversations",
+        options
+      );
+      const data = await response.json();
+      res.status(200).json(data);
+    } catch (err) {
+      res.status(500).json({ error: "Error making API request" });
+    }
+  };
+
   return (
-    <SnackbarProvider maxSnack={3}>
-      <Head>
-        <title>Gesture Recognition</title>
-      </Head>
-      <h3>Gesture Recognition</h3>
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-          }}
-        >
-          <div>
-            <Webcam
-              ref={videoRef}
-              style={{ width: "480px", height: "360px" }}
-              videoConstraints={{ facingMode: "user" }}
-            />
-            <canvas
-              ref={canvasRef}
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "480px",
-                height: "360px",
-              }}
-            />
-            <h2 style={{ color: "lightsalmon" }}>{dmessage}</h2>
-          </div>
-          <MeadiaStream signText={dmessage} enableSignLanguage={enableCam} />
+    <div className="w-full h-full flex flex-col bg-gray-100">
+      <div className="w-full bg-blue-400 text-white py-4 px-6 shadow-md flex justify-between items-center">
+        <h1 className="text-xl font-semibold">New conversation</h1>
+      </div>
+      <div className="flex-grow w-full h-[70%] flex justify-center items-center p-6 lg:p-5">
+        <div className="relative w-full max-w-screen-lg h-full bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
+          <Webcam
+            audio={false}
+            className="w-full h-full object-cover"
+            videoConstraints={{
+              width: 1280,
+              height: 720,
+              facingMode: "user",
+            }}
+          />
         </div>
-      )}
-    </SnackbarProvider>
+      </div>
+
+      <div className="flex w-full justify-start px-6 lg:px-10 mb-4">
+        <div className="relative w-40 h-24 bg-black rounded-lg overflow-hidden shadow-lg">
+          <Webcam
+            className="w-full h-full object-cover"
+            ref={videoRef}
+            videoConstraints={{
+              width: 640,
+              height: 480,
+              facingMode: "user",
+            }}
+          />
+          <canvas
+            ref={canvasRef}
+            style={{
+              position: "absolute",
+              // top: 0,
+              // left: 0,
+              width: 640,
+              height: 480,
+            }}
+          />
+          <button
+            onClick={() => enableCam()}
+            className="absolute top-2 right-2 bg-white bg-opacity-30 text-black py-1 px-2 rounded cursor-pointer"
+          >
+            {webcamRunning ? "Stop" : "Start"}
+          </button>
+          <h2 className="text-lightsalmon">{dmessage}</h2>
+        </div>
+      </div>
+
+      <div className="w-full flex justify-center py-6 bg-white border-t border-gray-300 shadow-lg">
+        <button
+          className="text-white bg-blue-400 hover:bg-blue-500 transition-all py-2 px-8 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+          aria-label="Leave the conversation"
+        >
+          Leave Conversation
+        </button>
+        {/* <h2 className="text-lightsalmon">{dmessage}</h2> */}
+      </div>
+    </div>
   );
-}
+};
+
+export default Conversation;
