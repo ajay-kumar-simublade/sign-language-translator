@@ -18,7 +18,7 @@ const Conversation = () => {
   const canvasRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [dmessage, setMessage] = useState("");
-  const [started, setStarted] = useState(true);
+  const [started, setStarted] = useState(false);
   const [checked, setChecked] = useState(true);
   const [session, setSession] = useState({
     id: "",
@@ -87,7 +87,7 @@ const Conversation = () => {
     return () => {
       if (webcamRunning) {
         // Stop the webcam stream if it's running
-        const stream = videoRef.current.srcObject;
+        const stream = videoRef?.current?.srcObject;
         if (stream) {
           const tracks = stream.getTracks();
           tracks.forEach((track) => track.stop());
@@ -112,7 +112,7 @@ const Conversation = () => {
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       videoRef.current.srcObject = stream;
       // videoRef.current.play();
-      predictWebcam();
+      setTimeout(() => predictWebcam(),5000)
     } catch (error) {
       console.error("Error accessing webcam:", error);
     }
@@ -121,6 +121,7 @@ const Conversation = () => {
   let lastVideoTime = -1;
 
   async function predictWebcam() {
+    try {
     const canvasCtx = canvasRef.current.getContext("2d");
     const webcamElement = videoRef.current.video;
 
@@ -132,7 +133,7 @@ const Conversation = () => {
     let nowInMs = Date.now();
     if (webcamElement.currentTime !== lastVideoTime) {
       lastVideoTime = webcamElement.currentTime;
-      const results = await gestureRecognizer.recognizeForVideo(
+      const results = await gestureRecognizer?.recognizeForVideo(
         webcamElement,
         nowInMs
       );
@@ -218,6 +219,9 @@ const Conversation = () => {
     if (webcamRunning) {
       requestAnimationFrame(predictWebcam);
     }
+  } catch (error) {
+      console.log(error)
+  }
   }
 
   const makeConversation = async () => {
@@ -259,7 +263,7 @@ const Conversation = () => {
         <h1 className="text-xl font-semibold">Hawking Hands</h1>
       </div>
       {
-        started ?
+        !started ?
           <Zoom in style={{ transitionDelay: '100ms' }}>
             <video autoPlay muted loop height="100%">
               <source src="/videos/sign-video.mp4" type="video/mp4" />
@@ -290,7 +294,7 @@ const Conversation = () => {
           </div>
       }
       <div className="w-full flex justify-center py-4 bg-gray-100">
-        {webcamRunning ? (
+        {started ? (
           <button
             className="text-white bg-[#EF4444] hover:bg-[#EF4444-500 transition-all py-2 px-8 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
             onClick={() => leaveConversation()}
