@@ -255,8 +255,8 @@ const Conversation = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
-      <div className="w-full bg-gradient-to-br from-[#3B82F6] to-[#6366F1] text-white py-4 px-6 shadow-md flex justify-between items-center">
-        <h1 className="text-xl font-semibold">SELF SERVICE KIOSK</h1>
+      <div className="w-full bg-gradient-to-br from-[#000] to-[#6366F1] text-white py-4 px-6 shadow-md flex justify-between items-center">
+        <h1 className="text-xl font-semibold">Hawking Hands</h1>
       </div>
       {
         started ?
@@ -325,7 +325,7 @@ const Conversation = () => {
               <Button
                 style={{
                   marginTop: '20px',
-                  backgroundColor: '#10B981',
+                  backgroundColor: 'hsl(206.4, 100%, 42%)',
                   color: 'white',
                   padding: '10px 20px',
                   borderRadius: '8px',
@@ -333,8 +333,8 @@ const Conversation = () => {
                   transition: 'background-color 0.3s',
                 }}
                 onClick={enableCam}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#10B981-500'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#10B981'}
+                onMouseEnter={(e) => e.currentTarget.style.width = '60%'}
+                onMouseLeave={(e) => e.currentTarget.style.width = '55%'}
                 aria-label="Start the conversation"
               >
                 Start Conversation
