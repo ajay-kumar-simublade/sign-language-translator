@@ -1,8 +1,10 @@
 import React from "react";
 import { Container, Box, Typography, Button } from "@mui/material";
 import Image from "next/image";
+import { useRouter } from "next/router";
 
 export default function Home() {
+  const router = useRouter();
   return (
     <>
       <Box
@@ -89,9 +91,7 @@ export default function Home() {
                   boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
                   fontWeight: "bold",
                 }}
-                onClick={() =>
-                  alert("Start Video Call with AI Assistant clicked")
-                }
+                onClick={() => router.push("/conversation")}
               >
                 Connect with Nyla
               </Button>

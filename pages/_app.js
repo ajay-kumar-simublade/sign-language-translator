@@ -1,13 +1,7 @@
 import Head from "next/head";
 import "../styles/globals.css";
-import { useEffect } from "react";
 
 function MyApp({ Component, pageProps }) {
-  useEffect(() => {
-    fetch("/api/socket").finally(() => {
-      console.log("Socket.io initialized");
-    });
-  }, []);
   return (
     <>
       <Head>

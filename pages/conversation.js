@@ -1,11 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
-import { io } from "socket.io-client";
-
-import Head from "next/head";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import Webcam from "react-webcam";
 import { GestureRecognizer, FilesetResolver } from "@mediapipe/tasks-vision";
 import { DrawingUtils } from "@mediapipe/tasks-vision";
 import MeadiaStream from "../compnents/meadiaStream";
+import Zoom from "@mui/material/Zoom";
+import Grow from "@mui/material/Grow";
+import { Button } from "@mui/material";
+import { useSnackbar } from "notistack";
+import { useCallObject, useDailyEvent } from "@daily-co/daily-react";
+import { useRouter } from "next/router";
 
 let gestureRecognizer;
 let runningMode = "VIDEO";
@@ -19,16 +22,55 @@ const Conversation = () => {
   const [conversationId, setConversationId] = useState(false);
   let prev = "";
   const [messages, setMessages] = useState("");
-  useEffect(() => {
-    const socket = io();
-    socket.on("message", (data) => {
-      if (data.conversation_id === conversationId)
-        setMessages(data?.properties?.speech);
-    });
+  const [started, setStarted] = useState(false);
+  const [checked, setChecked] = useState(true);
+  const [session, setSession] = useState({
+    id: "",
+    name: "",
+  });
+  const { enqueueSnackbar } = useSnackbar();
+  const router = useRouter();
+  let callObject = useCallObject({
+    options: {
+      // audioSource: mediaStreamTrack,
+      startAudioOff: false,
+      // url: "https://tavus.daily.co/c74a52c6",
+      userName: "Ajay",
+    },
+  });
 
-    return () => socket.disconnect();
-  }, []);
+  async function HandlJoin({ conversation_url }) {
+    setLoading(true);
+    console.log("===---", conversation_url);
+    try {
+      // await callObject?.leave()
+      const res = await callObject?.join({ url: conversation_url });
+
+      console.log(res, "res");
+      setLoading(false);
+      // enableSignLanguage()
+      setTimeout(() => {
+        Object.values(callObject.participants()).forEach((user) => {
+          console.log(callObject.participants(), "part", user);
+          if (user.owner) {
+            setSession({
+              id: user.session_id,
+              name: user.user_name,
+            });
+            setLoading(false);
+          }
+        });
+      }, 3000);
+      enqueueSnackbar("Successfully joined", { variant: "success" });
+    } catch (error) {
+      console.log(error);
+      enqueueSnackbar(error.message, { variant: "error" });
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
+    setTimeout(() => setChecked(true), 500);
     const loadGestureRecognizer = async () => {
       const vision = await FilesetResolver.forVisionTasks(
         "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm",
@@ -49,8 +91,7 @@ const Conversation = () => {
 
     return () => {
       if (webcamRunning) {
-        // Stop the webcam stream if it's running
-        const stream = videoRef.current.srcObject;
+        const stream = videoRef?.current?.srcObject;
         if (stream) {
           const tracks = stream.getTracks();
           tracks.forEach((track) => track.stop());
@@ -65,6 +106,7 @@ const Conversation = () => {
       alert("Please wait for gestureRecognizer to load");
       return;
     }
+    setStarted(true);
     makeConversation();
 
     webcamRunning = !webcamRunning;
@@ -74,7 +116,7 @@ const Conversation = () => {
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       videoRef.current.srcObject = stream;
       // videoRef.current.play();
-      predictWebcam();
+      setTimeout(() => predictWebcam(), 5000);
     } catch (error) {
       console.error("Error accessing webcam:", error);
     }
@@ -83,113 +125,119 @@ const Conversation = () => {
   let lastVideoTime = -1;
 
   async function predictWebcam() {
-    const canvasCtx = canvasRef.current.getContext("2d");
-    const webcamElement = videoRef.current.video;
+    try {
+      const canvasCtx = canvasRef.current.getContext("2d");
+      const webcamElement = videoRef.current.video;
 
-    if (runningMode === "IMAGE") {
-      runningMode = "VIDEO";
-      await gestureRecognizer.setOptions({ runningMode: "VIDEO" });
-    }
+      if (runningMode === "IMAGE") {
+        runningMode = "VIDEO";
+        await gestureRecognizer.setOptions({ runningMode: "VIDEO" });
+      }
 
-    let nowInMs = Date.now();
-    if (webcamElement.currentTime !== lastVideoTime) {
-      lastVideoTime = webcamElement.currentTime;
-      const results = await gestureRecognizer.recognizeForVideo(
-        webcamElement,
-        nowInMs,
-      );
+      let nowInMs = Date.now();
+      if (webcamElement.currentTime !== lastVideoTime) {
+        lastVideoTime = webcamElement.currentTime;
+        const results = await gestureRecognizer?.recognizeForVideo(
+          webcamElement,
+          nowInMs,
+        );
 
-      const videoWidth = videoRef.current.video.videoWidth;
-      const videoHeight = videoRef.current.video.videoHeight;
+        const videoWidth = videoRef.current.video.videoWidth;
+        const videoHeight = videoRef.current.video.videoHeight;
 
-      // Set video width
-      videoRef.current.video.width = videoWidth;
-      videoRef.current.video.height = videoHeight;
-      canvasRef.current.width = videoWidth;
-      canvasRef.current.height = videoHeight;
-      canvasCtx.save();
-      canvasCtx.clearRect(0, 0, videoWidth, videoHeight);
-      const drawingUtils = new DrawingUtils(canvasCtx);
+        // Set video width
+        videoRef.current.video.width = videoWidth;
+        videoRef.current.video.height = videoHeight;
+        canvasRef.current.width = videoWidth;
+        canvasRef.current.height = videoHeight;
+        canvasCtx.save();
+        canvasCtx.clearRect(0, 0, videoWidth, videoHeight);
+        const drawingUtils = new DrawingUtils(canvasCtx);
 
-      if (results.landmarks) {
-        if (results?.gestures[0]?.categoryName) {
-          console.log(
-            results.gestures[0].categoryName,
-            results.gestures[0].displayName,
-            "=====",
-          );
+        if (results.landmarks) {
+          if (results?.gestures[0]?.categoryName) {
+            console.log(
+              results.gestures[0].categoryName,
+              results.gestures[0].displayName,
+              "=====",
+            );
+          }
+          for (const landmarks of results.landmarks) {
+            drawingUtils.drawConnectors(
+              landmarks,
+              GestureRecognizer.HAND_CONNECTIONS,
+              { color: "#00FF00", lineWidth: 5 },
+            );
+            drawingUtils.drawLandmarks(landmarks, {
+              color: "#FF0000",
+              lineWidth: 2,
+            });
+          }
         }
-        for (const landmarks of results.landmarks) {
-          drawingUtils.drawConnectors(
-            landmarks,
-            GestureRecognizer.HAND_CONNECTIONS,
-            { color: "#00FF00", lineWidth: 5 },
-          );
-          drawingUtils.drawLandmarks(landmarks, {
-            color: "#FF0000",
-            lineWidth: 2,
-          });
+        canvasCtx.restore();
+
+        // Display gesture results (e.g., category and score)
+        if (results.gestures.length > 0) {
+          const categoryName = results.gestures[0][0].categoryName;
+          const categoryScore = parseFloat(
+            results.gestures[0][0].score * 100,
+          ).toFixed(2);
+          if (categoryName !== "None" && categoryScore > 30) {
+            let message = "";
+            switch (categoryName) {
+              case "Victory":
+                message = "I'm Fine";
+                break;
+              case "Thumb_Down":
+                message = "No, Please";
+                break;
+              case "Thumb_Up":
+                message = "Ok, Fine";
+                break;
+              case "Closed_Fist":
+                message = "I'm Good";
+                break;
+              case "Open_Palm":
+                message = "Hello, How are you?";
+                break;
+              case "Pointing_Up":
+                message = "Thank you";
+                break;
+              case "ILoveYou":
+                message = "Can you check my Bank Balance please?";
+                break;
+            }
+            if (prev !== message) {
+              prev = message;
+              console.log(message, "-----");
+              setMessage(message);
+            }
+
+            // console.log(
+            //   `Gesture: ${categoryName}, Confidence: ${categoryScore}%`
+            // );
+          }
         }
       }
-      canvasCtx.restore();
 
-      // Display gesture results (e.g., category and score)
-      if (results.gestures.length > 0) {
-        const categoryName = results.gestures[0][0].categoryName;
-        const categoryScore = parseFloat(
-          results.gestures[0][0].score * 100,
-        ).toFixed(2);
-        if (categoryName !== "None" && categoryScore > 30) {
-          let message = "";
-          switch (categoryName) {
-            case "Victory":
-              message = "I'm Fine";
-              break;
-            case "Thumb_Down":
-              message = "No, Please";
-              break;
-            case "Thumb_Up":
-              message = "Ok, Fine";
-              break;
-            case "Closed_Fist":
-              message = "I'm Good";
-              break;
-            case "Open_Palm":
-              message = "Hello, How are you?";
-              break;
-            case "Pointing_Up":
-              message = "Thank you";
-              break;
-            case "ILoveYou":
-              message = "Can you check my Bank Balance please?";
-              break;
-          }
-          if (prev !== message) {
-            prev = message;
-            console.log(message, "-----");
-            setMessage(message);
-          }
-
-          console.log(
-            `Gesture: ${categoryName}, Confidence: ${categoryScore}%`,
-          );
-        }
+      if (webcamRunning) {
+        requestAnimationFrame(predictWebcam);
       }
-    }
-
-    if (webcamRunning) {
-      requestAnimationFrame(predictWebcam);
+    } catch (error) {
+      console.log(error);
     }
   }
 
   const makeConversation = async () => {
+    setLoading(true);
     const url = "https://tavusapi.com/v2/conversations";
     const apiKey = "f181ad861a6c415fac24418c195f27a7";
 
     const data = {
       replica_id: "rfb51183fe",
       persona_id: "p88964a7",
-      callback_url: "https://4nkzzc8g-3000.inc1.devtunnels.ms/api/webhook",
+      callback_url:
+        "https://4nkzzc8g-3000.inc1.devtunnels.ms/api/chat/completions",
       conversation_name: "Tets Ajay Test",
     };
     try {
@@ -205,12 +253,13 @@ const Conversation = () => {
         throw new Error("Network response was not ok " + response.statusText);
       }
       const responseData = await response.json();
-      if (responseData.conversation_id) {
-        setConversationId(responseData.conversation_id);
-      }
+      setConversationId(responseData.conversation_id);
       console.log(responseData);
+      setTimeout(() => {
+        HandlJoin(responseData);
+      }, 2000);
     } catch (error) {
-      console.error("There was a problem with the fetch operation:", error);
+      setLoading(false);
     }
   };
 
@@ -229,49 +278,56 @@ const Conversation = () => {
       if (!response.ok) {
         throw new Error("Network response was not ok " + response.statusText);
       }
-      const responseData = await response.json();
-      setConversationId(true);
+      router.push("/");
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error);
+      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
-      <div className="w-full bg-gradient-to-br from-[#3B82F6] to-[#6366F1] text-white py-4 px-6 shadow-md flex justify-between items-center">
-        <h1 className="text-xl font-semibold">New conversation</h1>
+      <div className="w-full bg-gradient-to-br from-[#000] to-[#6366F1] text-white py-4 px-6 shadow-md flex justify-between items-center">
+        <h1 className="text-xl font-semibold">Hawking Hands</h1>
       </div>
-      <div className="flex-grow w-full flex justify-center items-center p-6 lg:p-5 bg-gray-100">
-        <div className="relative w-full max-w-screen-lg flex h-full gap-4">
-          <div className="relative w-1/2 lg:h-[320px]">
-            <Webcam
-              className="w-full h-full object-cover rounded-lg"
-              ref={videoRef}
-              videoConstraints={{
-                width: 1280,
-                height: 720,
-                facingMode: "user",
-              }}
-            />
-            <canvas
-              ref={canvasRef}
-              className="absolute top-0 left-0 w-full h-full"
-            />
+      {!started ? (
+        <Zoom in style={{ transitionDelay: "100ms" }}>
+          <video autoPlay muted loop height="100%">
+            <source src="/videos/sign-video.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </Zoom>
+      ) : (
+        <div className="flex-grow w-full flex justify-center items-center p-6 lg:p-5 bg-gray-100">
+          <div className="relative w-full max-w-screen-lg flex h-full gap-4">
+            <div className="relative w-1/2 lg:h-[420px]">
+              <Webcam
+                className="w-full h-full object-cover rounded-lg"
+                ref={videoRef}
+                videoConstraints={{
+                  width: 1280,
+                  height: 720,
+                  facingMode: "user",
+                }}
+              />
+              <canvas
+                ref={canvasRef}
+                className="absolute top-0 left-0 w-full h-full"
+              />
+            </div>
+            <div className="relative w-1/1 lg:h-[480px]">
+              <MeadiaStream
+                signText={dmessage}
+                callObject={callObject}
+                session={session}
+                loading={loading}
+              />
+            </div>
           </div>
-          <Webcam
-            audio={false}
-            className="w-1/2 lg:h-[320px] object-cover rounded-lg"
-            videoConstraints={{
-              width: 1280,
-              height: 720,
-              facingMode: "user",
-            }}
-          />
         </div>
-      </div>
-      <div>Hi</div>
+      )}
       <div className="w-full flex justify-center py-4 bg-gray-100">
-        {webcamRunning && conversationId ? (
+        {started ? (
           <button
             className="text-white bg-[#EF4444] hover:bg-[#EF4444-500 transition-all py-2 px-8 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
             onClick={() => leaveConversation()}
@@ -280,13 +336,62 @@ const Conversation = () => {
             Leave Conversation
           </button>
         ) : (
-          <button
-            onClick={() => enableCam()}
-            className="text-white bg-[#10B981] hover:bg-[#10B981-500 transition-all py-2 px-8 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-            aria-label="Leave the conversation"
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "100vh",
+              textAlign: "center",
+              position: "absolute",
+              top: "0%",
+              color: "white", // Default text color
+              textShadow: "2px 2px 4px rgba(0, 0, 0, 0.7)", // Text shadow for contrast
+            }}
           >
-            Start Conversation
-          </button>
+            <Grow
+              in={checked}
+              style={{ transformOrigin: "0 0 0" }}
+              {...(checked ? { timeout: 3000 } : {})}
+            >
+              <h1 style={{ fontSize: "25px", marginBottom: "10px" }}>
+                Where Technology Meets Everyone
+              </h1>
+            </Grow>
+            <Grow
+              in={checked}
+              style={{ transformOrigin: "0 0 0" }}
+              {...(checked ? { timeout: 6000 } : {})}
+            >
+              <p style={{ marginBottom: "20px" }}>
+                Connecting People and Technology
+              </p>
+            </Grow>
+            <Grow
+              in={checked}
+              style={{ transformOrigin: "0 0 0" }}
+              {...(checked ? { timeout: 10000 } : {})}
+            >
+              <Button
+                style={{
+                  marginTop: "20px",
+                  backgroundColor: "hsl(206.4, 100%, 42%)",
+                  color: "white",
+                  padding: "10px 20px",
+                  borderRadius: "8px",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                  transition: "background-color 0.3s",
+                }}
+                onClick={enableCam}
+                onMouseEnter={(e) => (e.currentTarget.style.width = "60%")}
+                onMouseLeave={(e) => (e.currentTarget.style.width = "55%")}
+                aria-label="Start the conversation"
+              >
+                Start Conversation
+              </Button>
+            </Grow>
+          </div>
         )}
       </div>
     </div>
