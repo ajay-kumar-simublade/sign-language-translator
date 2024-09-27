@@ -5,6 +5,7 @@ import { GestureRecognizer, FilesetResolver } from "@mediapipe/tasks-vision";
 import { DrawingUtils } from "@mediapipe/tasks-vision"; // Add this import for drawing
 import styles from "../styles/Home.module.css"; // Assuming you have some styles
 import MeadiaStream from "../compnents/meadiaStream";
+import { SnackbarProvider } from 'notistack';
 
 let gestureRecognizer;
 let runningMode = "VIDEO";
@@ -157,9 +158,9 @@ export default function Home() {
             setMessage(message);
           }
 
-          console.log(
-            `Gesture: ${categoryName}, Confidence: ${categoryScore}%`,
-          );
+          // console.log(
+          //   `Gesture: ${categoryName}, Confidence: ${categoryScore}%`,
+          // );
         }
       }
     }
@@ -170,14 +171,11 @@ export default function Home() {
   }
 
   return (
-    <div className={styles.container}>
+    <SnackbarProvider maxSnack={3}>
       <Head>
         <title>Gesture Recognition</title>
       </Head>
       <h3>Gesture Recognition</h3>
-      <button onClick={() => enableCam()}>
-        {webcamRunning ? "Stop" : "Start"} Webcam
-      </button>
       {loading ? (
         <p>Loading...</p>
       ) : (
@@ -206,9 +204,9 @@ export default function Home() {
             />
             <h2 style={{ color: "lightsalmon" }}>{dmessage}</h2>
           </div>
-          {/* <MeadiaStream /> */}
+          <MeadiaStream signText={dmessage} enableSignLanguage={enableCam} />
         </div>
       )}
-    </div>
+    </SnackbarProvider>
   );
 }
