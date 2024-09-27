@@ -173,56 +173,40 @@ const Conversation = () => {
   }
 
   const makeConversation = async () => {
-    const url = "https://tavusapi.com/v2/conversations";
-    const apiKey = "f181ad861a6c415fac24418c195f27a7";
-
-    const data = {
-      replica_id: "rfb51183fe",
-      persona_id: "p88964a7",
-      callback_url: "https://eoh7blrwpnctppa.m.pipedream.net",
-      conversation_name: "Tets Ajay Test",
+    const options = {
+      method: "POST",
+      headers: {
+        "x-api-key": "f181ad861a6c415fac24418c195f27a7",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        replica_id: "r79e1c033f",
+        persona_id: "p5317866",
+        callback_url: "http://localhost:3002",
+        conversation_name: "A Meeting with Hassaan",
+        conversational_context:
+          "You are about to talk to Hassaan, one of the cofounders of Tavus. He loves to talk about AI, startups, and racing cars.",
+        custom_greeting: "Hey there Hassaan, long time no see!",
+        properties: {
+          max_call_duration: 3600,
+          participant_left_timeout: 60,
+          enable_recording: true,
+          enable_transcription: true,
+          recording_s3_bucket_name: "conversation-recordings",
+          recording_s3_bucket_region: "us-east-1",
+          aws_assume_role_arn: "",
+        },
+      }),
     };
     try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKey,
-        },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) {
-        throw new Error("Network response was not ok " + response.statusText);
-      }
-      const responseData = await response.json();
-      if (responseData.conversation_id) {
-        setConversationId(responseData.conversation_id);
-      }
-      console.log(responseData);
-    } catch (error) {
-      console.error("There was a problem with the fetch operation:", error);
-    }
-  };
-
-  const leaveConversation = async () => {
-    const url = `https://tavusapi.com/v2/conversations/${conversationId}/end`;
-    const apiKey = "f181ad861a6c415fac24418c195f27a7";
-
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKey,
-        },
-      });
-      if (!response.ok) {
-        throw new Error("Network response was not ok " + response.statusText);
-      }
-      const responseData = await response.json();
-      console.log(responseData);
-    } catch (error) {
-      console.error("There was a problem with the fetch operation:", error);
+      const response = await fetch(
+        "https://tavusapi.com/v2/conversations",
+        options
+      );
+      const data = await response.json()
+      console.log(data);
+    } catch (err) {
+      console.log(err,"----")
     }
   };
 
