@@ -15,6 +15,7 @@ const Conversation = () => {
   const canvasRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [dmessage, setMessage] = useState("");
+  const [conversationId, setConversationId] = useState(true);
   let prev = "";
 
   useEffect(() => {
@@ -70,6 +71,7 @@ const Conversation = () => {
   };
 
   let lastVideoTime = -1;
+
   async function predictWebcam() {
     const canvasCtx = canvasRef.current.getContext("2d");
     const webcamElement = videoRef.current.video;
@@ -171,53 +173,84 @@ const Conversation = () => {
   }
 
   const makeConversation = async () => {
-    const options = {
-      method: "POST",
-      headers: {
-        "x-api-key": "<api-key>",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        replica_id: "r79e1c033f",
-        persona_id: "p5317866",
-        callback_url: "http://localhost:3002",
-        conversation_name: "A Meeting with Hassaan",
-        conversational_context:
-          "You are about to talk to Hassaan, one of the cofounders of Tavus. He loves to talk about AI, startups, and racing cars.",
-        custom_greeting: "Hey there Hassaan, long time no see!",
-        properties: {
-          max_call_duration: 3600,
-          participant_left_timeout: 60,
-          enable_recording: true,
-          enable_transcription: true,
-          recording_s3_bucket_name: "conversation-recordings",
-          recording_s3_bucket_region: "us-east-1",
-          aws_assume_role_arn: "",
-        },
-      }),
+    const url = "https://tavusapi.com/v2/conversations";
+    const apiKey = "f181ad861a6c415fac24418c195f27a7";
+
+    const data = {
+      replica_id: "rfb51183fe",
+      persona_id: "p88964a7",
+      callback_url: "https://eoh7blrwpnctppa.m.pipedream.net",
+      conversation_name: "Tets Ajay Test",
     };
     try {
-      const response = await fetch(
-        "https://tavusapi.com/v2/conversations",
-        options
-      );
-      const data = await response.json();
-      res.status(200).json(data);
-    } catch (err) {
-      res.status(500).json({ error: "Error making API request" });
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        throw new Error("Network response was not ok " + response.statusText);
+      }
+      const responseData = await response.json();
+      if (responseData.conversation_id) {
+        setConversationId(responseData.conversation_id);
+      }
+      console.log(responseData);
+    } catch (error) {
+      console.error("There was a problem with the fetch operation:", error);
+    }
+  };
+
+  const leaveConversation = async () => {
+    const url = `https://tavusapi.com/v2/conversations/${conversationId}/end`;
+    const apiKey = "f181ad861a6c415fac24418c195f27a7";
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Network response was not ok " + response.statusText);
+      }
+      const responseData = await response.json();
+      console.log(responseData);
+    } catch (error) {
+      console.error("There was a problem with the fetch operation:", error);
     }
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-gray-100">
-      <div className="w-full bg-blue-400 text-white py-4 px-6 shadow-md flex justify-between items-center">
+    <div className="min-h-screen flex flex-col bg-gray-100">
+      <div className="w-full bg-gradient-to-br from-[#3B82F6] to-[#6366F1] text-white py-4 px-6 shadow-md flex justify-between items-center">
         <h1 className="text-xl font-semibold">New conversation</h1>
       </div>
-      <div className="flex-grow w-full h-[70%] flex justify-center items-center p-6 lg:p-5">
-        <div className="relative w-full max-w-screen-lg h-full bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
+      <div className="flex-grow w-full flex justify-center items-center p-6 lg:p-5 bg-gray-100">
+        <div className="relative w-full max-w-screen-lg flex h-full gap-4">
+          <div className="relative w-1/2 lg:h-[320px]">
+            <Webcam
+              className="w-full h-full object-cover rounded-lg"
+              ref={videoRef}
+              videoConstraints={{
+                width: 1280,
+                height: 720,
+                facingMode: "user",
+              }}
+            />
+            <canvas
+              ref={canvasRef}
+              className="absolute top-0 left-0 w-full h-full"
+            />
+          </div>
           <Webcam
             audio={false}
-            className="w-full h-full object-cover"
+            className="w-1/2 lg:h-[320px] object-cover rounded-lg"
             videoConstraints={{
               width: 1280,
               height: 720,
@@ -226,46 +259,24 @@ const Conversation = () => {
           />
         </div>
       </div>
-
-      <div className="flex w-full justify-start px-6 lg:px-10 mb-4">
-        <div className="relative w-40 h-24 bg-black rounded-lg overflow-hidden shadow-lg">
-          <Webcam
-            className="w-full h-full object-cover"
-            ref={videoRef}
-            videoConstraints={{
-              width: 640,
-              height: 480,
-              facingMode: "user",
-            }}
-          />
-          <canvas
-            ref={canvasRef}
-            style={{
-              position: "absolute",
-              // top: 0,
-              // left: 0,
-              width: 640,
-              height: 480,
-            }}
-          />
+      <div className="w-full flex justify-center py-4 bg-gray-100">
+        {webcamRunning ? (
+          <button
+            className="text-white bg-[#EF4444] hover:bg-[#EF4444-500 transition-all py-2 px-8 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            onClick={() => leaveConversation()}
+            aria-label="Stop the webcam"
+          >
+            Leave Conversation
+          </button>
+        ) : (
           <button
             onClick={() => enableCam()}
-            className="absolute top-2 right-2 bg-white bg-opacity-30 text-black py-1 px-2 rounded cursor-pointer"
+            className="text-white bg-[#10B981] hover:bg-[#10B981-500 transition-all py-2 px-8 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            aria-label="Leave the conversation"
           >
-            {webcamRunning ? "Stop" : "Start"}
+            Start Conversation
           </button>
-          <h2 className="text-lightsalmon">{dmessage}</h2>
-        </div>
-      </div>
-
-      <div className="w-full flex justify-center py-6 bg-white border-t border-gray-300 shadow-lg">
-        <button
-          className="text-white bg-blue-400 hover:bg-blue-500 transition-all py-2 px-8 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-          aria-label="Leave the conversation"
-        >
-          Leave Conversation
-        </button>
-        {/* <h2 className="text-lightsalmon">{dmessage}</h2> */}
+        )}
       </div>
     </div>
   );
