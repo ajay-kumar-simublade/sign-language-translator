@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { io } from "socket.io-client";
 
 import Head from "next/head";
 import Webcam from "react-webcam";
@@ -15,13 +16,22 @@ const Conversation = () => {
   const canvasRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [dmessage, setMessage] = useState("");
-  const [conversationId, setConversationId] = useState(true);
+  const [conversationId, setConversationId] = useState(false);
   let prev = "";
+  const [messages, setMessages] = useState("");
+  useEffect(() => {
+    const socket = io();
+    socket.on("message", (data) => {
+      if (data.conversation_id === conversationId)
+        setMessages(data?.properties?.speech);
+    });
 
+    return () => socket.disconnect();
+  }, []);
   useEffect(() => {
     const loadGestureRecognizer = async () => {
       const vision = await FilesetResolver.forVisionTasks(
-        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm",
       );
       gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
         baseOptions: {
@@ -86,7 +96,7 @@ const Conversation = () => {
       lastVideoTime = webcamElement.currentTime;
       const results = await gestureRecognizer.recognizeForVideo(
         webcamElement,
-        nowInMs
+        nowInMs,
       );
 
       const videoWidth = videoRef.current.video.videoWidth;
@@ -106,14 +116,14 @@ const Conversation = () => {
           console.log(
             results.gestures[0].categoryName,
             results.gestures[0].displayName,
-            "====="
+            "=====",
           );
         }
         for (const landmarks of results.landmarks) {
           drawingUtils.drawConnectors(
             landmarks,
             GestureRecognizer.HAND_CONNECTIONS,
-            { color: "#00FF00", lineWidth: 5 }
+            { color: "#00FF00", lineWidth: 5 },
           );
           drawingUtils.drawLandmarks(landmarks, {
             color: "#FF0000",
@@ -127,7 +137,7 @@ const Conversation = () => {
       if (results.gestures.length > 0) {
         const categoryName = results.gestures[0][0].categoryName;
         const categoryScore = parseFloat(
-          results.gestures[0][0].score * 100
+          results.gestures[0][0].score * 100,
         ).toFixed(2);
         if (categoryName !== "None" && categoryScore > 30) {
           let message = "";
@@ -161,7 +171,7 @@ const Conversation = () => {
           }
 
           console.log(
-            `Gesture: ${categoryName}, Confidence: ${categoryScore}%`
+            `Gesture: ${categoryName}, Confidence: ${categoryScore}%`,
           );
         }
       }
@@ -179,7 +189,7 @@ const Conversation = () => {
     const data = {
       replica_id: "rfb51183fe",
       persona_id: "p88964a7",
-      callback_url: "https://eoh7blrwpnctppa.m.pipedream.net",
+      callback_url: "https://4nkzzc8g-3000.inc1.devtunnels.ms/api/webhook",
       conversation_name: "Tets Ajay Test",
     };
     try {
@@ -220,7 +230,7 @@ const Conversation = () => {
         throw new Error("Network response was not ok " + response.statusText);
       }
       const responseData = await response.json();
-      console.log(responseData);
+      setConversationId(true);
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error);
     }
@@ -259,8 +269,9 @@ const Conversation = () => {
           />
         </div>
       </div>
+      <div>Hi</div>
       <div className="w-full flex justify-center py-4 bg-gray-100">
-        {webcamRunning ? (
+        {webcamRunning && conversationId ? (
           <button
             className="text-white bg-[#EF4444] hover:bg-[#EF4444-500 transition-all py-2 px-8 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
             onClick={() => leaveConversation()}
