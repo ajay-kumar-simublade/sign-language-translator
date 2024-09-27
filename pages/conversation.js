@@ -8,6 +8,7 @@ import { useSnackbar } from 'notistack';
 import Zoom from '@mui/material/Zoom';
 import Grow from '@mui/material/Grow';
 import { Button } from "@mui/material";
+import { translations } from "../utils/translatoins";
 
 let gestureRecognizer;
 let runningMode = "VIDEO";
@@ -95,7 +96,7 @@ const Conversation = () => {
       }
     };
   }, []);
-
+  let debounceTimeout;
   const enableCam = async () => {
     if (!gestureRecognizer) {
       console.log("test", gestureRecognizer);
@@ -112,7 +113,12 @@ const Conversation = () => {
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       videoRef.current.srcObject = stream;
       // videoRef.current.play();
-      setTimeout(() => predictWebcam(),5000)
+      // Clear any existing debounce timeout before starting a new one
+    clearTimeout(debounceTimeout);
+    debounceTimeout = setTimeout(() => {
+      // Start predicting after 3 seconds
+      predictWebcam();
+    }, 2000); 
     } catch (error) {
       console.error("Error accessing webcam:", error);
     }
@@ -151,13 +157,6 @@ const Conversation = () => {
       const drawingUtils = new DrawingUtils(canvasCtx);
 
       if (results.landmarks) {
-        if (results?.gestures[0]?.categoryName) {
-          console.log(
-            results.gestures[0].categoryName,
-            results.gestures[0].displayName,
-            "====="
-          );
-        }
         for (const landmarks of results.landmarks) {
           drawingUtils.drawConnectors(
             landmarks,
@@ -174,38 +173,23 @@ const Conversation = () => {
 
       // Display gesture results (e.g., category and score)
       if (results.gestures.length > 0) {
-        const categoryName = results.gestures[0][0].categoryName;
+        let categoryName = results.gestures[0][0].categoryName;
+        const length = results.gestures.length
+        if(length === 2){
+          if(results.gestures[0][0].categoryName === results.gestures[1][0].categoryName){
+            categoryName = results.gestures[0][0].categoryName + "_" + length
+          } else {
+            categoryName = results.gestures[0][0].categoryName + "_" + results.gestures[1][0].categoryName
+          }
+        }
         const categoryScore = parseFloat(
           results.gestures[0][0].score * 100
         ).toFixed(2);
         if (categoryName !== "None" && categoryScore > 30) {
           let message = "";
-          switch (categoryName) {
-            case "Victory":
-              message = "I'm Fine";
-              break;
-            case "Thumb_Down":
-              message = "No, Please";
-              break;
-            case "Thumb_Up":
-              message = "Ok, Fine";
-              break;
-            case "Closed_Fist":
-              message = "I'm Good";
-              break;
-            case "Open_Palm":
-              message = "Hello, How are you?";
-              break;
-            case "Pointing_Up":
-              message = "Thank you";
-              break;
-            case "ILoveYou":
-              message = "Can you check my Bank Balance please?";
-              break;
-          }
-          if (prev !== message) {
+          message = translations[categoryName]
+          if (message && prev !== message) {
             prev = message;
-            console.log(message, "-----");
             setMessage(message);
           }
 
