@@ -1,63 +1,21 @@
-import { useRef, useEffect, useState, memo } from 'react';
-import { DailyProvider, useCallObject, DailyVideo, DailyAudio } from '@daily-co/daily-react';
+import { useRef, useEffect, useState } from 'react';
+import { DailyProvider, DailyVideo, DailyAudio } from '@daily-co/daily-react';
 import getAudioContext from 'audio-context';
-import Button from '@mui/material/Button';
-import { useSnackbar } from 'notistack';
 
-export default ({ signText, enableSignLanguage }) => {
-    const { enqueueSnackbar } = useSnackbar();
+export default ({ signText, session, callObject, loading }) => {
 
-    const [text, setText] = useState('');
-    const [loading, setLoading] = useState(null);
     const [mediaStream, setMediaStream] = useState(null);
-    const [notify, setNotify] = useState(null);
-    const [session, setSession] = useState({
-        id: "",
-        name: ""
-    });
-    console.log(signText, "=====")
-    const [mediaStreamTrack, setMediaStreamTrack] = useState(null);
+    
+    console.log(signText, "=====", session)
     const audioContextRef = useRef(null);
     const callRef = useRef(null);
 
-    let callObject = useCallObject({
-        options: {
-            audioSource: mediaStreamTrack,
-            startAudioOff: false,
-            url: "https://tavus.daily.co/cb6d89e1",
-            userName: "Ajay",
-        },
-    });
+    
 
     useEffect(() => {
         console.log(signText, "-------")
         speakText()
     }, [signText])
-
-    async function HandlJoin() {
-        setLoading(true)
-        try {
-            await callObject?.leave()
-            const res = await callObject?.join({ url: 'https://tavus.daily.co/cb6d89e1' })
-            setLoading(false)
-            enableSignLanguage()
-            setTimeout(() => {
-                Object.values(callObject.participants()).forEach(user => {
-                console.log(callObject.participants())
-                    if (user.owner) {
-                        setSession({
-                            id: user.session_id,
-                            name: user.user_name
-                        })
-                    }
-                })
-            }, 2000);
-            enqueueSnackbar('Successfully joined', {variant: 'success'})
-        } catch (error) {
-            enqueueSnackbar(error.message, {variant: 'error'})
-          setLoading(false)  
-        }
-    }
 
     useEffect(() => {
         const context = getAudioContext();
@@ -71,11 +29,6 @@ export default ({ signText, enableSignLanguage }) => {
             context?.close();
         };
     }, []);
-
-
-    const handleTextChange = (e) => {
-        setText(e.target.value);
-    };
 
     const speakText = () => {
         if (!audioContextRef.current || !signText) return;
@@ -103,16 +56,15 @@ export default ({ signText, enableSignLanguage }) => {
         window.speechSynthesis.speak(utterance);
     };
     return (
-        <div>
+        < >
             {loading ? <h4>Loading....</h4> :
-                <DailyProvider callObject={callObject} >
+                <DailyProvider callObject={callObject} sty>
                     <div ref={callRef} />
                     {/* <DailyVideo style={{ width: '50%' }} sessionId={callObject?.participants()?.local?.session_id} /> */}
-                    <DailyVideo style={{ width: '100%', height: '100%' }} sessionId={session?.id} />
+                    <DailyVideo width={640} height={480}  sessionId={session?.id} />
                     <DailyAudio />
                 </DailyProvider>
             }
-            <Button onClick={() => HandlJoin()} variant="contained">Create Conversation</Button>
-        </div>
+        </>
     );
 };
