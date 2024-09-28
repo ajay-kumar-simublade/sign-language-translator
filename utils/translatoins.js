@@ -14,7 +14,7 @@ export const translations = {
 
         "Closed_Fist_2": "Is it available for Speacially abled people?",
 
-        "ILoveYou_2": "Please send an email to ajay@gmail.com",
+        "ILoveYou_2": "Please send an email to John at google dot com",
 
         "Thumb_Down_Thumb_Up": "It was nice talking to you",
         "Thumb_Up_Thumb_Down": "It was nice talking to you",
