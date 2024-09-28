@@ -1,22 +1,12 @@
-// pages/index.js
 import React from "react";
-import { useRouter } from 'next/router';
 import { Container, Box, Typography, Button } from "@mui/material";
-import Head from "next/head";
 import Image from "next/image";
+import { useRouter } from "next/router";
 
 export default function Home() {
-  const router = useRouter()
+  const router = useRouter();
   return (
     <>
-      <Head>
-        <title>Deaf & Dumb Communication</title>
-        <meta
-          name="description"
-          content="AI-based communication platform for deaf and mute users."
-        />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      </Head>
       <Box
         sx={{
           margin: 0,
@@ -101,9 +91,7 @@ export default function Home() {
                   boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
                   fontWeight: "bold",
                 }}
-                onClick={() =>
-                  router.push('/conversation')
-                }
+                onClick={() => router.push("/conversation")}
               >
                 Connect with Nyla
               </Button>
