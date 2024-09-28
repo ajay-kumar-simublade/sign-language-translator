@@ -282,7 +282,7 @@ const Conversation = () => {
       <div style={{ zIndex: 9 }} className="w-full bg-gradient-to-br from-[#000] to-[#6366F1] text-white py-4 px-6 shadow-md flex justify-between items-center">
         <h1 className="text-xl font-semibold">Hawking Hands</h1>
       </div>
-      <div className="min-h-screen flex justify-center items-center bg-gray-900 text-white gap-4">
+      <div className="min-h-screen flex justify-center items-center bg-gray-900 text-white gap-4" style={{marginTop: '-60px'}}>
         {!started &&
           // <Zoom in style={{ transitionDelay: "100ms" }}>
           <video autoPlay muted loop height="100%" style={{
@@ -302,7 +302,7 @@ const Conversation = () => {
         }
         <div className="flex justify-center w-11/12 gap-12 align-middle" style={{ zIndex: 9 }}>
           {started && (
-            <div className="w-4/5 h-full rounded-md bg-gray-800">
+            <div className="w-3/5 h-full rounded-md bg-gray-800">
               <MeadiaStream
                 signText={dmessage}
                 callObject={callObject}
@@ -312,7 +312,7 @@ const Conversation = () => {
             </div>
           )}
           <div
-            className={`${started ? "w-2/5" : "w-1/3 min-w-[400px] bg-gray-800 shadow-lg"
+            className={`${started ? "w-3/5" : "w-1/3 min-w-[400px] bg-gray-800 shadow-lg"
               }  rounded-xl ${started
                 ? "p-0 flex flex-col align-middle justify-center"
                 : "px-8 py-6"
@@ -348,7 +348,8 @@ const Conversation = () => {
             )}
             {/* Camera Preview */}
             <div
-              className={`w-full h-48 bg-gray-700 rounded-md overflow-hidden relative  shadow-md flex items-center justify-center ${started ? "mb-0 h-60" : "mb-6"
+            style={{height: started && '22rem'}}
+              className={`w-full h-48 bg-gray-700 rounded-md overflow-hidden relative  shadow-md flex items-center justify-center ${started ? "mb-0 h-80" : "mb-6"
                 }`}
             >
               {cameraPermission ? (
@@ -399,7 +400,7 @@ const Conversation = () => {
               </div>
             )}
             {started && (
-              <footer className="mt-6 flex justify-center">
+              <footer className="mt-6 flex justify-center" style={{position: 'absolute', top: '85%', right: '42%'}}>
                 <button
                   className="bg-red-500 hover:bg-red-600 py-3 px-8 rounded-md shadow-md focus:outline-none transition-transform duration-300 transform hover:scale-105 text-lg font-semibold"
                   onClick={leaveConversation}
