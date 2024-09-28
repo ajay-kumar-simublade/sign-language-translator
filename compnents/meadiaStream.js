@@ -6,12 +6,10 @@ import { CallEvents } from "./EventListener";
 export default ({ signText, session, callObject, loading }) => {
   const [mediaStream, setMediaStream] = useState(null);
 
-  console.log(signText, "=====", session);
   const audioContextRef = useRef(null);
   const callRef = useRef(null);
 
   useEffect(() => {
-    console.log(signText, "-------");
     speakText();
   }, [signText]);
 
@@ -62,12 +60,12 @@ export default ({ signText, session, callObject, loading }) => {
       ) : (
         <DailyProvider callObject={callObject} sty>
           <div ref={callRef} className="relative w-full">
+            <DailyAudio />
             <DailyVideo
               sessionId={session?.id}
               className="w-full h-full rounded-md"
             />
             <CallEvents />
-            <DailyAudio />
           </div>
         </DailyProvider>
       )}
