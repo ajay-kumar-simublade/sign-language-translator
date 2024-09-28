@@ -66,9 +66,13 @@ const Conversation = () => {
       setLoading(false);
     }
   }
+
   
   const getMedia = async() => {
-    await navigator.mediaDevices.getUserMedia({ video: true })
+    await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true,
+    })
   }
 
   useEffect(() => {

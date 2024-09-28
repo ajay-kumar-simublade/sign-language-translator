@@ -3,16 +3,22 @@ export const translations = {
 
         "Thumb_Up_2": "I'm looking to pursue for my Post graduation with University of California",
 
-        "Pointing_Up_2": "In the field of Robotics",
-
+        
+        "Pointing_Up_2": "I'm planning to do my PG in Robotics",
+        
         "Thumb_Down_2": "Robotic surgical systems",
-
+        
+        
         "Closed_Fist_Thumb_Down": "I have done my Bachelor of engineering & my project was Robotic Biopsy System",
-        "Thumb_Down_Closed_Fist": "I have done my Bachelor of engineering & & my project was Robotic Biopsy System",
+        "Thumb_Down_Closed_Fist": "I have done my Bachelor of engineering & my project was Robotic Biopsy System",
+        
+        "Open_Palm_Thumb_Up":"I worked on Robotic Arm For precise movement and positioning of biopsy instruments",
+        "Thumb_Up_Open_Palm":"I worked on Robotic Arm For precise movement and positioning of biopsy instruments",
+        
+        "Victory_2": "Is it available for Speacially abled people?",
 
-        "Victory_2": "What courses can be offered for physically handicapped students?",
+        // "Closed_Fist_2": "Can you explain me ",
 
-        "Closed_Fist_2": "Is it available for Speacially abled people?",
 
         "ILoveYou_2": "Please send an email to John at google dot com",
 
