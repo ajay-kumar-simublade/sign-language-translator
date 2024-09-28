@@ -9,8 +9,8 @@ export function CallEvents() {
   });
 
   return (
-    <div className="absolute  bg-gray-950 px-4  w-full py-4">
-      <strong>Transcript: {' '}</strong>
+    <div className="absolute w-full py-4">
+      <strong>Nyla: {' '}</strong>
       {meetingState}
     </div>
   );
