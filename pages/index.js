@@ -71,21 +71,6 @@ export default function Home() {
               <Button
                 variant="contained"
                 sx={{
-                  backgroundImage: "linear-gradient(135deg, #3B82F6, #6366F1)",
-                  color: "#fff",
-                  "&:hover": { backgroundColor: "#3B82F6" },
-                  borderRadius: "6px",
-                  padding: "0.75rem 2rem",
-                  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-                  fontWeight: "bold",
-                }}
-                onClick={() => router.push("/conversation")}
-              >
-                Apply now
-              </Button>
-              <Button
-                variant="contained"
-                sx={{
                   backgroundImage: "linear-gradient(135deg, #10B981, #14B8A6)",
                   color: "#fff",
                   "&:hover": { backgroundColor: "#10B981" },

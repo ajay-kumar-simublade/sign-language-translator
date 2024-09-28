@@ -66,8 +66,15 @@ const Conversation = () => {
       setLoading(false);
     }
   }
+  
+  const getMedia = async() => {
+    await navigator.mediaDevices.getUserMedia({ video: true })
+  }
 
   useEffect(() => {
+    if(!cameraPermission)
+    getMedia().then(() => setCameraPermission(true))
+
     navigator.permissions
       .query({ name: "camera" })
       .then((permission) => {
@@ -339,8 +346,8 @@ const Conversation = () => {
                   >
                     <>
                       <span>Enter</span>
-                      <AiOutlineLogin className="text-xl" />
-                      {joining &&<CircularProgress size="20px" />}
+                      {joining ? <CircularProgress size="20px" />: <AiOutlineLogin className="text-xl" />
+                      }
                     </>
                   </button>
                 </header>
@@ -348,14 +355,14 @@ const Conversation = () => {
             )}
             {/* Camera Preview */}
             <div
-            style={{height: started && '22rem'}}
-              className={`w-full h-48 bg-gray-700 rounded-md overflow-hidden relative  shadow-md flex items-center justify-center ${started ? "mb-0 h-80" : "mb-6"
+            
+              className={`w-full h-48 bg-gray-700 rounded-md relative  shadow-md flex items-center justify-center ${started ? "mb-0 h-full" : "mb-6"
                 }`}
             >
               {cameraPermission ? (
                 <>
                   <Webcam
-                    className="absolute top-0 left-0 w-full h-full object-cover"
+                    className="absolute top-0 left-0 w-full h-full object-cover rounded-md"
                     ref={videoRef}
                     videoConstraints={{
                       width: 1280,
@@ -367,6 +374,10 @@ const Conversation = () => {
                     ref={canvasRef}
                     className="absolute top-0 left-0 w-full h-full"
                   />
+                  {started && (
+                   <div className="absolute  -bottom-14 w-full py-4">
+                      <strong>You: {' '}</strong>{dmessage}
+                  </div>)}
                 </>
               ) : (
                 <div className="text-center space-y-4">
