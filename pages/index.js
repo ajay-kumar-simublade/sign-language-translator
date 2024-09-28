@@ -7,6 +7,11 @@ export default function Home() {
   const router = useRouter();
   return (
     <>
+    <div>
+      <div style={{ zIndex: 9 }} className="w-full bg-gradient-to-br from-[#000] to-[#6366F1] text-white py-4 px-6 shadow-md flex justify-between items-center">
+        <h1 className="text-xl font-semibold">Hawking Hands</h1>
+      </div>
+      </div>
       <Box
         sx={{
           margin: 0,
@@ -51,18 +56,16 @@ export default function Home() {
               component="h1"
               sx={{ color: "#1E3A8A", fontWeight: "bold" }}
             >
-              Hello, Welcome to self service Kiosk
+              Welcome to Hawking Hands
+            </Typography>
+            <h3 style={{fontSize: '14px', marginTop: '-20px',  fontWeight: 600}}>Tech for Empowering Abilities</h3>
+            <Typography variant="body1" sx={{ color: "#374151" }}>
+            Our AI-powered communication platform is designed to help deaf and mute individuals connect with the world effortlessly. 
+            By using advanced sign language interpretation, our platform translates gestures into meaningful text or speech.
             </Typography>
             <Typography variant="body1" sx={{ color: "#374151" }}>
-              Our AI-based communication platform is designed to assist those
-              who are deaf and mute in connecting with the world effortlessly.
-              Using advanced sign language interpretation, our platform
-              translates gestures into meaningful responses.
-            </Typography>
-            <Typography variant="body1" sx={{ color: "#374151" }}>
-              Whether you need to check your account details or start a video
-              call, our digital communicator is here to make your experience
-              seamless and intuitive. Choose an option below to get started!
+            Whether you're looking to find a suitable program or need assistance with an application, 
+            our digital communicator is here to guide you every step of the way.
             </Typography>
             <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
               <Button
@@ -76,9 +79,9 @@ export default function Home() {
                   boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
                   fontWeight: "bold",
                 }}
-                onClick={() => alert("View Account Details clicked")}
+                onClick={() => router.push("/conversation")}
               >
-                Check balance
+                Apply now
               </Button>
               <Button
                 variant="contained"

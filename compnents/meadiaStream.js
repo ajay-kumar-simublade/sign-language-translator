@@ -51,7 +51,20 @@ export default ({ signText, session, callObject, loading }) => {
       window.speechSynthesis.cancel();
     };
 
-    window.speechSynthesis.speak(utterance);
+    utterance.pitch = 0.9; // Increase pitch to 1.5, adjust as needed
+
+// Set the rate (0.1 to 10, where 1 is the default)
+utterance.rate = 0.9; // Default rate, adjust as needed
+
+// Optionally, set the voice
+const voices = window.speechSynthesis.getVoices();
+console.log(voices)
+utterance.voice = voices.find(voice => voice.name === "Reed (English (United States))"
+); // Example voice
+
+// Speak the utterance
+window.speechSynthesis.speak(utterance);
+    // window.speechSynthesis.speak(utterance);
   };
   return (
     <>
